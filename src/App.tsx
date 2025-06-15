@@ -4,6 +4,7 @@ import StockInfo from './components/StockInfo';
 import VolumeProfileChart from './components/VolumeProfileChart';
 import type { StockData, StockSymbol } from './types/StockData';
 import analyticsData from '/home/steven/Disks/AnalyticalScratch/strategy_test/2025/06/09/volume_profile_strategy_20250320_20250610.json';
+import { ENTRY_CONCLUSION_SET } from './types/Constants';
 
 // Type assertion for analyticsData
 const typedAnalyticsData = analyticsData as StockData;
@@ -45,7 +46,17 @@ function App() {
   // Calculate pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = data?.results.slice(indexOfFirstItem, indexOfLastItem) || [];
+  
+  // Sort stocks to put ENTRY_CONCLUSION_SET stocks first
+  const sortedResults = data?.results ? [...data.results].sort((a, b) => {
+    const aIsEntry = ENTRY_CONCLUSION_SET.includes(a.conclusion);
+    const bIsEntry = ENTRY_CONCLUSION_SET.includes(b.conclusion);
+    if (aIsEntry && !bIsEntry) return -1;
+    if (!aIsEntry && bIsEntry) return 1;
+    return 0;
+  }) : [];
+  
+  const currentItems = sortedResults.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = data ? Math.ceil(data.results.length / itemsPerPage) : 0;
 
   // Handle page change
@@ -159,26 +170,29 @@ function App() {
               </div>
 
               <div className="space-y-2">
-                {currentItems.map((stock, index) => (
-                  <button
-                    key={index}
-                    onClick={() => setSelectedStock(stock)}
-                    className={`w-full text-left p-3 rounded-lg border transition-colors ${
-                      selectedStock?.symbol === stock.symbol
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                        : stock.conclusion === 'entry_point_found' || 
-                          stock.conclusion === 'all_time_high_with_acceptable_risk' ||
-                          stock.conclusion === 'cur_price_in_highest_stack_range_with_acceptable_risk'
-                        ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:border-green-600'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    <div className="font-semibold">{stock.symbol}</div>
-                    <div className="text-sm opacity-75">
-                      ${stock.current_price.toFixed(2)}
-                    </div>
-                  </button>
-                ))}
+                {currentItems.map((stock, index) => {
+                  const isHighlighted = ENTRY_CONCLUSION_SET.includes(stock.conclusion);
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedStock(stock)}
+                      className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                        selectedStock?.symbol === stock.symbol
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                          : isHighlighted
+                          ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:border-green-600'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      <div className={`font-semibold ${isHighlighted ? 'text-green-700 dark:text-green-300' : ''}`}>
+                        {stock.symbol} {isHighlighted ? '🚀' : ''}
+                      </div>
+                      <div className={`text-sm opacity-75 ${isHighlighted ? 'text-green-700 dark:text-green-300' : ''}`}>
+                        ${stock.current_price.toFixed(2)}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
 
               {/* Pagination */}

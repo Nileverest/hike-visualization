@@ -69,10 +69,10 @@ const VolumeProfileChart: React.FC<VolumeProfileChartProps> = ({ stockData }) =>
         price <= stockData.upper_stack_range.upper_price;
       
       // Highlight lower stack range in red for all_time_high_with_acceptable_risk and cur_price_in_highest_stack_range_with_acceptable_risk
-      if ((isInLowerRange && (stockData.conclusion === 'all_time_high_with_acceptable_risk' || 
-                             stockData.conclusion === 'cur_price_in_highest_stack_range_with_acceptable_risk')) || 
-          (isInLowerRange && stockData.conclusion === 'entry_point_found') || 
-          (isInUpperRange && stockData.conclusion === 'entry_point_found')) {
+      if ((isInLowerRange && (stockData.conclusion === 'ALL_TIME_HIGH_WITH_ACCEPTABLE_RISK' || 
+                             stockData.conclusion === 'CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_ACCEPTABLE_RISK')) || 
+          (isInLowerRange && stockData.conclusion === 'ENTRY_POINT_FOUND') || 
+          (isInUpperRange && stockData.conclusion === 'ENTRY_POINT_FOUND')) {
         return 'rgba(255, 0, 0, 0.6)'; // Red for lower/upper stack ranges
       } else if (isInStackRange) {
         return 'rgba(54, 162, 235, 0.6)'; // Blue for other stack ranges

@@ -1,3 +1,4 @@
+import { ENTRY_CONCLUSION_SET } from '../types/Constants';
 import type { StockSymbol } from '../types/StockData';
 
 interface StockInfoProps {
@@ -22,16 +23,10 @@ const StockInfo: React.FC<StockInfoProps> = ({ stockData }) => {
   };
 
   const getConclusionColor = (conclusion: string) => {
-    switch (conclusion) {
-      case 'entry_point_found':
-      case 'all_time_high_with_acceptable_risk':
-      case 'cur_price_in_highest_stack_range_with_acceptable_risk':
-        return 'text-green-600 dark:text-green-400';
-      case 'no_entry_point':
-        return 'text-red-600 dark:text-red-400';
-      default:
-        return 'text-yellow-600 dark:text-yellow-400';
+    if (ENTRY_CONCLUSION_SET.includes(conclusion)) {
+      return 'text-green-600 dark:text-green-400';
     }
+    return 'text-gray-600 dark:text-gray-400';
   };
 
   return (
@@ -48,9 +43,7 @@ const StockInfo: React.FC<StockInfoProps> = ({ stockData }) => {
         </p>
       </div>
 
-      {(stockData.conclusion === 'entry_point_found' || 
-        stockData.conclusion === 'all_time_high_with_acceptable_risk' ||
-        stockData.conclusion === 'cur_price_in_highest_stack_range_with_acceptable_risk') && (
+      {ENTRY_CONCLUSION_SET.includes(stockData.conclusion) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Lower Stack Range */}
           {stockData.lower_stack_range && (
@@ -84,7 +77,7 @@ const StockInfo: React.FC<StockInfoProps> = ({ stockData }) => {
           )}
 
           {/* Upper Stack Range - Only show for entry_point_found */}
-          {stockData.conclusion === 'entry_point_found' && stockData.upper_stack_range && (
+          {ENTRY_CONCLUSION_SET.includes(stockData.conclusion) && stockData.upper_stack_range && (
             <div className="bg-teal-50 dark:bg-teal-900/20 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-teal-800 dark:text-teal-200 mb-2">
                 Upper Stack Range
