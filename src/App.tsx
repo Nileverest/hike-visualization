@@ -3,7 +3,7 @@ import './App.css';
 import StockInfo from './components/StockInfo';
 import VolumeProfileChart from './components/VolumeProfileChart';
 import type { StockData, StockSymbol } from './types/StockData';
-import analyticsData from '/home/steven/Disks/AnalyticalScratch/strategy_test/2025/06/09/volume_profile_strategy_20250320_20250610.json';
+import analyticsData from '/home/steven/Disks/AnalyticalScratch/strategy_test/2025/06/15/volume_profile_strategy_20250320_20250615.json';
 import { ENTRY_CONCLUSION_SET } from './types/Constants';
 
 // Type assertion for analyticsData
