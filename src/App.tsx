@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import StockInfo from './components/StockInfo';
 import VolumeProfileChart from './components/VolumeProfileChart';
+import DataEndpointTester from './components/DataEndpointTester';
 import type { StockData, StockSymbol } from './types/StockData';
 import { ENTRY_CONCLUSION_SET } from './types/Constants';
 
-// CloudFront endpoint URL we need to change to the correct one
-const DATA_ENDPOINT = 'https://result.strat.nileverest.co/strategy/2025/03/20/volume_profile_strategy.json';
+// Use local proxy URL - this will be redirected to the remote endpoint via Vite proxy
+const DATA_ENDPOINT = '/2025/03/20/volume_profile_strategy.json';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,7 @@ function App() {
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
+            "Access-Control-Allow-Origin": "*",
           },
           // Handle CORS
           mode: 'cors',
@@ -157,6 +159,9 @@ function App() {
             Data loaded: {data.timestamp} | Found {data.results.length} stock symbols
           </p>
         </header>
+
+        {/* Data Endpoint Tester */}
+        <DataEndpointTester />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Stock Selection Sidebar */}
