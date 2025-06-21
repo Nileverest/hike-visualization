@@ -3,11 +3,10 @@ import './App.css';
 import StockInfo from './components/StockInfo';
 import VolumeProfileChart from './components/VolumeProfileChart';
 import type { StockData, StockSymbol } from './types/StockData';
-import analyticsData from '/home/steven/Disks/AnalyticalScratch/strategy_test/2025/06/15/volume_profile_strategy_20250320_20250615.json';
 import { ENTRY_CONCLUSION_SET } from './types/Constants';
 
-// Type assertion for analyticsData
-const typedAnalyticsData = analyticsData as StockData;
+// CloudFront endpoint URL
+const DATA_ENDPOINT = 'https://result.strat.nileverest.co/strategy/2025/03/20/volume_profile_strategy.json';
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -22,8 +21,23 @@ function App() {
     
     const loadData = async () => {
       try {
-        console.log('Attempting to fetch data...');
-        const jsonData: StockData = typedAnalyticsData;
+        console.log('Attempting to fetch data from:', DATA_ENDPOINT);
+        
+        const response = await fetch(DATA_ENDPOINT, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+          // Handle CORS
+          mode: 'cors',
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const jsonData: StockData = await response.json();
         console.log('Data loaded successfully:', jsonData);
         setData(jsonData);
         
