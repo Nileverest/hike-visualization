@@ -5,7 +5,7 @@ import VolumeProfileChart from './components/VolumeProfileChart';
 import type { StockData, StockSymbol } from './types/StockData';
 import { ENTRY_CONCLUSION_SET } from './types/Constants';
 
-// CloudFront endpoint URL
+// CloudFront endpoint URL we need to change to the correct one
 const DATA_ENDPOINT = 'https://result.strat.nileverest.co/strategy/2025/03/20/volume_profile_strategy.json';
 
 function App() {
