@@ -10,7 +10,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { useMemo, useCallback } from 'react';
+import { useMemo } from 'react';
 import type { StockSymbol } from '../types/StockData';
 
 ChartJS.register(
