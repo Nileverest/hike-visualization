@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { ENVIRONMENT_CONFIG } from '../config/environment';
 
 interface DataEndpointTesterProps {
   onDataLoad?: (data: any) => void;
@@ -8,7 +9,7 @@ export default function DataEndpointTester({ onDataLoad }: DataEndpointTesterPro
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<any>(null);
-  const [testPath, setTestPath] = useState('/2025/03/20/volume_profile_strategy.json');
+  const [testPath, setTestPath] = useState('2025/03/20/volume_profile_strategy.json');
 
   const testEndpoint = async (path: string) => {
     setLoading(true);
@@ -16,8 +17,10 @@ export default function DataEndpointTester({ onDataLoad }: DataEndpointTesterPro
     setResponse(null);
 
     try {
-      console.log(`Testing endpoint: ${path}`);
-      const response = await fetch(path);
+      // Use environment configuration to get the correct URL
+      const fullUrl = ENVIRONMENT_CONFIG.getDataEndpoint(path);
+      console.log(`Testing endpoint: ${fullUrl}`);
+      const response = await fetch(fullUrl);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -40,9 +43,9 @@ export default function DataEndpointTester({ onDataLoad }: DataEndpointTesterPro
   };
 
   const quickTestPaths = [
-    '/2025/03/20/volume_profile_strategy.json',
-    '/2025/06/07/volume_profile_strategy.json',
-    '/2025/01/15/volume_profile_strategy.json'
+    '2025/03/20/volume_profile_strategy.json',
+    '2025/06/07/volume_profile_strategy.json',
+    '2025/01/15/volume_profile_strategy.json'
   ];
 
   return (
@@ -51,11 +54,21 @@ export default function DataEndpointTester({ onDataLoad }: DataEndpointTesterPro
         Data Endpoint Tester
       </h2>
       <p className="text-gray-600 dark:text-gray-400 mb-4">
-        Test the proxy functionality by accessing different date paths. 
-        These requests will be automatically redirected to the remote data endpoint.
+        Test the data endpoint functionality. In development, requests are proxied to the remote endpoint.
+        In production, requests go directly to the remote endpoint.
       </p>
 
       <div className="space-y-4">
+        {/* Environment info */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded">
+          <div className="text-sm text-blue-700 dark:text-blue-300">
+            <strong>Environment:</strong> {import.meta.env.DEV ? 'Development (using proxy)' : 'Production (direct URL)'}
+          </div>
+          <div className="text-sm text-blue-600 dark:text-blue-400">
+            <strong>Base URL:</strong> {ENVIRONMENT_CONFIG.REMOTE_BASE_URL}
+          </div>
+        </div>
+
         {/* Quick test buttons */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -81,7 +94,7 @@ export default function DataEndpointTester({ onDataLoad }: DataEndpointTesterPro
         {/* Custom path input */}
         <div>
           <label htmlFor="testPath" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Custom Path:
+            Custom Path (relative to base):
           </label>
           <div className="flex gap-2">
             <input
@@ -89,7 +102,7 @@ export default function DataEndpointTester({ onDataLoad }: DataEndpointTesterPro
               id="testPath"
               value={testPath}
               onChange={(e) => setTestPath(e.target.value)}
-              placeholder="/2025/03/20/volume_profile_strategy.json"
+              placeholder="2025/03/20/volume_profile_strategy.json"
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             />
             <button

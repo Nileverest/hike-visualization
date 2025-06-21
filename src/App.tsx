@@ -5,9 +5,10 @@ import VolumeProfileChart from './components/VolumeProfileChart';
 import DataEndpointTester from './components/DataEndpointTester';
 import type { StockData, StockSymbol } from './types/StockData';
 import { ENTRY_CONCLUSION_SET } from './types/Constants';
+import { ENVIRONMENT_CONFIG } from './config/environment';
 
-// Use local proxy URL - this will be redirected to the remote endpoint via Vite proxy
-const DATA_ENDPOINT = '/2025/03/20/volume_profile_strategy.json';
+// Use environment-aware data endpoint
+const DATA_ENDPOINT = ENVIRONMENT_CONFIG.getDefaultDataEndpoint();
 
 function App() {
   const [loading, setLoading] = useState(true);
