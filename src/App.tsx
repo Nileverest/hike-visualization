@@ -24,15 +24,22 @@ function App() {
     const loadData = async () => {
       try {
         console.log('Attempting to fetch data from:', DATA_ENDPOINT);
-        
-        const response = await fetch(DATA_ENDPOINT, {
+        // parse the url structure to get the date path:
+        // Example http://localhost:5173/strategy/2025/06/20/volume_profile_strategy.json
+        // will be 2025/06/20/volume_profile_strategy.json
+        // from current url
+        const datePath = window.location.pathname.split('/').slice(2).join('/'); // get the date path
+        console.log('Date path:', datePath);
+        const url = ENVIRONMENT_CONFIG.getDataEndpoint(datePath);
+        console.log('URL:', url);
+        const response = await fetch(url, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
           },
           // Handle CORS
-          mode: 'cors',
+          // mode: 'cors',
         });
 
         if (!response.ok) {
