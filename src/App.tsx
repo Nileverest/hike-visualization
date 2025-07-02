@@ -8,7 +8,6 @@ import { ENTRY_CONCLUSION_SET } from './types/Constants';
 import { ENVIRONMENT_CONFIG } from './config/environment';
 
 // Use environment-aware data endpoint
-const DATA_ENDPOINT = ENVIRONMENT_CONFIG.getDefaultDataEndpoint();
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -23,14 +22,24 @@ function App() {
     
     const loadData = async () => {
       try {
-        console.log('Attempting to fetch data from:', DATA_ENDPOINT);
-        // parse the url structure to get the date path:
-        // Example http://localhost:5173/strategy/2025/06/20/volume_profile_strategy.json
-        // will be 2025/06/20/volume_profile_strategy.json
-        // from current url
-        const datePath = window.location.pathname.split('/').slice(2).join('/'); // get the date path
-        console.log('Date path:', datePath);
-        const url = ENVIRONMENT_CONFIG.getDataEndpoint(datePath);
+        // Parse URL query parameters for date
+        // Example: http://localhost:5173?year=2025&month=06&day=20
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Get date parameters with validation
+        const year = urlParams.get('year') || '2025';
+        const month = urlParams.get('month') || '03';
+        const day = urlParams.get('day') || '20';
+        
+        // Validate date parameters (optional)
+        const isValidYear = /^\d{4}$/.test(year);
+        const isValidMonth = /^\d{1,2}$/.test(month) && parseInt(month) >= 1 && parseInt(month) <= 12;
+        const isValidDay = /^\d{1,2}$/.test(day) && parseInt(day) >= 1 && parseInt(day) <= 31;
+        
+        if (!isValidYear || !isValidMonth || !isValidDay) {
+          console.warn('Invalid date parameters detected, using defaults');
+        }
+        const url = ENVIRONMENT_CONFIG.getDataEndpoint(year, month, day);
         console.log('URL:', url);
         const response = await fetch(url, {
           method: 'GET',
