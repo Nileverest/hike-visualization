@@ -30,7 +30,6 @@ function App() {
           headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json',
-            "Access-Control-Allow-Origin": "*",
           },
           // Handle CORS
           mode: 'cors',
