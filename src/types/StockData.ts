@@ -76,6 +76,7 @@ export interface SharpeRatioStrategyConfig {
   min_sharpe_ratio: number;
   max_sharpe_ratio: number;
   risk_free_rate: number;
+  volatility_method: string;
 }
 
 export interface WeightedAverageCandleStickStrategyConfig {
