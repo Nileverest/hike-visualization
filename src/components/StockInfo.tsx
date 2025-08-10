@@ -1,5 +1,6 @@
-import { ENTRY_CONCLUSION_SET } from '../types/Constants';
+
 import type { StockSymbol } from '../types/StockData';
+import { isStockEntryPoint } from '../utils/dataTransformer';
 
 interface StockInfoProps {
   stockData: StockSymbol;
@@ -23,7 +24,7 @@ const StockInfo: React.FC<StockInfoProps> = ({ stockData }) => {
   };
 
   const getConclusionColor = (conclusion: string) => {
-    if (ENTRY_CONCLUSION_SET.includes(conclusion)) {
+    if (isStockEntryPoint(conclusion)) {
       return 'text-green-600 dark:text-green-400';
     }
     return 'text-gray-600 dark:text-gray-400';
@@ -43,7 +44,7 @@ const StockInfo: React.FC<StockInfoProps> = ({ stockData }) => {
         </p>
       </div>
 
-      {ENTRY_CONCLUSION_SET.includes(stockData.conclusion) && (
+      {isStockEntryPoint(stockData.conclusion) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Lower Stack Range */}
           {stockData.lower_stack_range && (
@@ -76,8 +77,8 @@ const StockInfo: React.FC<StockInfoProps> = ({ stockData }) => {
             </div>
           )}
 
-          {/* Upper Stack Range - Only show for entry_point_found */}
-          {ENTRY_CONCLUSION_SET.includes(stockData.conclusion) && stockData.upper_stack_range && (
+          {/* Upper Stack Range - Only show for entry point stocks */}
+          {isStockEntryPoint(stockData.conclusion) && stockData.upper_stack_range && (
             <div className="bg-teal-50 dark:bg-teal-900/20 rounded-lg p-4">
               <h3 className="text-lg font-semibold text-teal-800 dark:text-teal-200 mb-2">
                 Upper Stack Range

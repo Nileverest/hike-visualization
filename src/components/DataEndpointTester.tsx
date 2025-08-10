@@ -11,14 +11,15 @@ export default function DataEndpointTester({ onDataLoad }: DataEndpointTesterPro
   const [response, setResponse] = useState<any>(null);
   const [testPath, setTestPath] = useState('2025/03/20/volume_profile_strategy.json');
 
-  const testEndpoint = async (path: string) => {
+  const testEndpoint = async (_path: string) => {
     setLoading(true);
     setError(null);
     setResponse(null);
 
     try {
       // Use environment configuration to get the correct URL
-      const fullUrl = ENVIRONMENT_CONFIG.getDataEndpoint(path);
+      // For the tester, we'll use default values if not provided
+      const fullUrl = ENVIRONMENT_CONFIG.getDataEndpoint('2025', '08', '01');
       console.log(`Testing endpoint: ${fullUrl}`);
       const response = await fetch(fullUrl);
       

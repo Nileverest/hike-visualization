@@ -4,8 +4,9 @@ import StockInfo from './components/StockInfo';
 import VolumeProfileChart from './components/VolumeProfileChart';
 import DataEndpointTester from './components/DataEndpointTester';
 import type { StockData, StockSymbol } from './types/StockData';
-import { ENTRY_CONCLUSION_SET } from './types/Constants';
+
 import { ENVIRONMENT_CONFIG } from './config/environment';
+import { ensureLegacyFormat, isStockEntryPoint } from './utils/dataTransformer';
 
 // Use environment-aware data endpoint
 
@@ -28,8 +29,8 @@ function App() {
         
         // Get date parameters with validation
         const year = urlParams.get('year') || '2025';
-        const month = urlParams.get('month') || '03';
-        const day = urlParams.get('day') || '20';
+        const month = urlParams.get('month') || '08';
+        const day = urlParams.get('day') || '09';
         
         // Validate date parameters (optional)
         const isValidYear = /^\d{4}$/.test(year);
@@ -55,8 +56,12 @@ function App() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const jsonData: StockData = await response.json();
-        console.log('Data loaded successfully:', jsonData);
+        const rawData = await response.json();
+        console.log('Raw data loaded successfully:', rawData);
+        
+        // Transform data to legacy format if needed
+        const jsonData: StockData = ensureLegacyFormat(rawData);
+        console.log('Transformed data:', jsonData);
         setData(jsonData);
         
         // Set the first stock as selected by default
@@ -79,10 +84,10 @@ function App() {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   
-  // Sort stocks to put ENTRY_CONCLUSION_SET stocks first
+  // Sort stocks to put entry point stocks first
   const sortedResults = data?.results ? [...data.results].sort((a, b) => {
-    const aIsEntry = ENTRY_CONCLUSION_SET.includes(a.conclusion);
-    const bIsEntry = ENTRY_CONCLUSION_SET.includes(b.conclusion);
+    const aIsEntry = isStockEntryPoint(a.conclusion);
+    const bIsEntry = isStockEntryPoint(b.conclusion);
     if (aIsEntry && !bIsEntry) return -1;
     if (!aIsEntry && bIsEntry) return 1;
     return 0;
@@ -206,7 +211,7 @@ function App() {
 
               <div className="space-y-2">
                 {currentItems.map((stock, index) => {
-                  const isHighlighted = ENTRY_CONCLUSION_SET.includes(stock.conclusion);
+                  const isHighlighted = isStockEntryPoint(stock.conclusion);
                   return (
                     <button
                       key={index}

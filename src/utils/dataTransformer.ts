@@ -1,0 +1,178 @@
+import type { 
+  VolumeProfileVisualizationData, 
+  StockSelectionResult, 
+  StockData, 
+  StockSymbol,
+  SymbolAnalysisOutput
+} from '../types/StockData';
+import { ENTRY_STACK_RANGE_POSITIONS, STACK_RANGE_POSITIONS } from '../types/Constants';
+
+/**
+ * Determines if a stock analysis result represents an entry point
+ * Based on the stack range position and presence of stack ranges
+ */
+export function isEntryPoint(symbolAnalysis: SymbolAnalysisOutput): boolean {
+  // Check if the stack range position indicates a potential entry point
+  const hasEntryPosition = ENTRY_STACK_RANGE_POSITIONS.includes(symbolAnalysis.stack_range_position as any);
+  
+  // Additional logic can be added here to check for other factors like:
+  // - Sharpe ratio within acceptable range
+  // - Risk assessment
+  // - Volume criteria
+  
+  const hasStackRanges = (
+    symbolAnalysis.lower_stack_range !== null || 
+    symbolAnalysis.upper_stack_range !== null ||
+    (symbolAnalysis.stack_ranges && symbolAnalysis.stack_ranges.length > 0)
+  );
+  
+  return Boolean(hasEntryPosition && hasStackRanges);
+}
+
+/**
+ * Derives a conclusion string from the symbol analysis data
+ * This attempts to recreate the conclusion logic from the Python backend
+ */
+export function deriveConclusion(symbolAnalysis: SymbolAnalysisOutput): string {
+  const position = symbolAnalysis.stack_range_position;
+  
+  // Map stack range positions to human-readable conclusions
+  switch (position) {
+    case STACK_RANGE_POSITIONS.HIGHER_THAN_ALL_STACK_RANGES:
+      return isEntryPoint(symbolAnalysis) 
+        ? "ALL_TIME_HIGH_WITH_ACCEPTABLE_RISK"
+        : "ALL_TIME_HIGH_WITH_UNACCEPTABLE_RISK";
+        
+    case STACK_RANGE_POSITIONS.IN_HIGHEST_STACK_RANGE:
+      return isEntryPoint(symbolAnalysis)
+        ? "CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_ACCEPTABLE_RISK"
+        : "CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_UNACCEPTABLE_RISK";
+        
+    case STACK_RANGE_POSITIONS.IN_LOWEST_STACK_RANGE:
+      return isEntryPoint(symbolAnalysis)
+        ? "CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_ACCEPTABLE_RISK"
+        : "CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_UNACCEPTABLE_RISK";
+        
+    case STACK_RANGE_POSITIONS.BETWEEN_TWO_STACK_RANGES:
+      return isEntryPoint(symbolAnalysis)
+        ? "CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_ACCEPTABLE_RISK"
+        : "CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_UNACCEPTABLE_RISK";
+        
+    case STACK_RANGE_POSITIONS.IN_THE_ONLY_STACK_RANGE:
+      return isEntryPoint(symbolAnalysis)
+        ? "CUR_PRICE_IN_THE_ONLY_STACK_RANGE_WITH_ACCEPTABLE_RISK"
+        : "CUR_PRICE_IN_THE_ONLY_STACK_RANGE_WITH_UNACCEPTABLE_RISK";
+        
+    case STACK_RANGE_POSITIONS.LOWER_THAN_ALL_STACK_RANGES:
+      return "CUR_PRICE_LOWER_THAN_ALL_STACK_RANGES";
+        
+    case STACK_RANGE_POSITIONS.NO_STACK_RANGES:
+      return "NO_STACK_RANGES_FOUND";
+        
+    default:
+      return "NO_APPLICABLE_ENTRY_SCENARIO_FOUND";
+  }
+}
+
+/**
+ * Transforms a StockSelectionResult into the legacy StockSymbol format
+ */
+export function transformStockSelectionResult(result: StockSelectionResult): StockSymbol {
+  const analysis = result.symbol_analysis_output;
+  
+  return {
+    symbol: analysis.symbol,
+    current_price: analysis.current_price,
+    stack_ranges: analysis.stack_ranges || [],
+    lower_stack_range: analysis.lower_stack_range || undefined,
+    upper_stack_range: analysis.upper_stack_range || undefined,
+    volume_histogram: analysis.volume_histogram,
+    gain_loss_ratio: undefined, // This would need to be calculated or provided separately
+    sharpe_ratio: analysis.sharpe_ratio,
+    conclusion: deriveConclusion(analysis)
+  };
+}
+
+/**
+ * Transforms the new VolumeProfileVisualizationData format into the legacy StockData format
+ * This allows existing components to work with the new data structure
+ */
+export function transformToLegacyFormat(newData: VolumeProfileVisualizationData): StockData {
+  const transformedResults = newData.results.map(transformStockSelectionResult);
+  
+  // Transform the config to match the legacy format
+  const legacyConfig = {
+    country: "US", // Default value since it's not in the new config
+    input_top_level_directory: newData.config.strategy_data_provider_config.input_top_level_directory,
+    output_directory: "", // Not available in new format
+    start_datetime: newData.config.strategy_data_provider_config.start_datetime,
+    end_datetime: newData.config.strategy_data_provider_config.end_datetime,
+    num_processes: 1, // Default value
+    sharpe_ratio_min: newData.config.sharpe_ratio_strategy_config.min_sharpe_ratio,
+    sharpe_ratio_max: newData.config.sharpe_ratio_strategy_config.max_sharpe_ratio,
+    gain_loss_ratio_threshold: newData.config.gain_loss_ratio_threshold,
+    lower_range_volume_to_upper_range_ratio_lower: newData.config.volume_histogram_strategy_config.lower_range_volume_to_upper_range_ratio_lower,
+    lower_range_volume_to_upper_range_ratio_upper: newData.config.volume_histogram_strategy_config.lower_range_volume_to_upper_range_ratio_upper,
+    price_increment: newData.config.major_stack_range_config.price_increment,
+    above_average_percentage: newData.config.major_stack_range_config.volume_threshold_above_mean_ratio,
+    tolerable_window: newData.config.major_stack_range_config.tolerable_window,
+    max_gap_percentage: newData.config.major_stack_range_config.stack_range_min_ratio,
+    volume_histogram_interval: newData.config.volume_histogram_strategy_config.interval,
+    decay_factor: newData.config.volume_histogram_strategy_config.decay_factor,
+    candle_stick_interval: newData.config.candle_stick_strategy_config.interval,
+    interval_moving_average_window: newData.config.candle_stick_strategy_config.interval_moving_average_window,
+    max_cost_per_trade: newData.config.position_management_config.max_cost_per_trade,
+    max_total_cost_exposure: newData.config.position_management_config.max_total_cost_exposure
+  };
+  
+  return {
+    timestamp: newData.timestamp,
+    config: legacyConfig,
+    results: transformedResults
+  };
+}
+
+/**
+ * Detects whether the provided data is in the new format or legacy format
+ */
+export function isNewFormat(data: any): data is VolumeProfileVisualizationData {
+  return (
+    data &&
+    data.results &&
+    data.results.length > 0 &&
+    data.results[0].strategy_position_output !== undefined &&
+    data.results[0].symbol_analysis_output !== undefined
+  );
+}
+
+/**
+ * Automatically transforms data to legacy format if it's in the new format
+ */
+export function ensureLegacyFormat(data: any): StockData {
+  if (isNewFormat(data)) {
+    return transformToLegacyFormat(data);
+  }
+  return data as StockData;
+}
+
+/**
+ * Determines if a stock symbol represents an entry point based on its conclusion
+ * Works with both legacy and new conclusion formats
+ */
+export function isStockEntryPoint(conclusion: string): boolean {
+  // Check for legacy format conclusions
+  if (conclusion.includes('ACCEPTABLE_RISK')) {
+    return true;
+  }
+  
+  // Check for specific entry point conclusions
+  const entryConclusions = [
+    'ALL_TIME_HIGH_WITH_ACCEPTABLE_RISK',
+    'CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_ACCEPTABLE_RISK',
+    'CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_ACCEPTABLE_RISK',
+    'CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_ACCEPTABLE_RISK',
+    'CUR_PRICE_IN_THE_ONLY_STACK_RANGE_WITH_ACCEPTABLE_RISK'
+  ];
+  
+  return entryConclusions.includes(conclusion);
+}
