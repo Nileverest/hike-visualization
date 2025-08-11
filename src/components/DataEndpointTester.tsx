@@ -16,10 +16,12 @@ export default function DataEndpointTester({ onDataLoad }: DataEndpointTesterPro
     setError(null);
     setResponse(null);
 
+    const [year, month, day] = _path.split('/');
+
     try {
       // Use environment configuration to get the correct URL
       // For the tester, we'll use default values if not provided
-      const fullUrl = ENVIRONMENT_CONFIG.getDataEndpoint('2025', '08', '01');
+      const fullUrl = ENVIRONMENT_CONFIG.getDataEndpoint(year, month, day);
       console.log(`Testing endpoint: ${fullUrl}`);
       const response = await fetch(fullUrl);
       
