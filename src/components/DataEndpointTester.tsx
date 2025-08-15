@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { ENVIRONMENT_CONFIG } from '../config/environment';
+import type { StockData } from '../types/StockData';
+import { ensureLegacyFormat } from '../utils/dataTransformer';
 
 interface DataEndpointTesterProps {
   onDataLoad?: (data: any) => void;
+  onStockDataUpdate?: (stockData: StockData) => void;
+  onPageReset?: () => void;
 }
 
-export default function DataEndpointTester({ onDataLoad }: DataEndpointTesterProps) {
+export default function DataEndpointTester({ onDataLoad, onStockDataUpdate, onPageReset }: DataEndpointTesterProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<any>(null);
@@ -29,10 +33,16 @@ export default function DataEndpointTester({ onDataLoad }: DataEndpointTesterPro
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      setResponse(data);
-      onDataLoad?.(data);
-      console.log('Data loaded successfully:', data);
+      const rawData = await response.json();
+      setResponse(rawData);
+      onDataLoad?.(rawData);
+      
+      // Transform data to legacy format and update stock data states
+      const transformedData: StockData = ensureLegacyFormat(rawData);
+      onStockDataUpdate?.(transformedData);
+      onPageReset?.();
+      
+      console.log('Data loaded successfully:', rawData);
     } catch (err) {
       console.error('Error testing endpoint:', err);
       setError(err instanceof Error ? err.message : 'Unknown error occurred');

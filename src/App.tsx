@@ -109,6 +109,22 @@ function App() {
     setCurrentPage(1); // Reset to first page when changing items per page
   };
 
+  // Handle new stock data from DataEndpointTester
+  const handleStockDataUpdate = (newStockData: StockData) => {
+    setData(newStockData);
+    // Set the first stock as selected by default
+    if (newStockData.results && newStockData.results.length > 0) {
+      setSelectedStock(newStockData.results[0]);
+    } else {
+      setSelectedStock(null);
+    }
+  };
+
+  // Handle page reset from DataEndpointTester
+  const handlePageReset = () => {
+    setCurrentPage(1);
+  };
+
   // Generate page numbers for pagination
   const getPageNumbers = () => {
     const pageNumbers = [];
@@ -182,7 +198,10 @@ function App() {
         </header>
 
         {/* Data Endpoint Tester */}
-        <DataEndpointTester />
+        <DataEndpointTester 
+          onStockDataUpdate={handleStockDataUpdate}
+          onPageReset={handlePageReset}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Stock Selection Sidebar */}
