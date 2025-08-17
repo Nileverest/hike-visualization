@@ -3,8 +3,10 @@ import type {
   StockSelectionResult, 
   StockData, 
   StockSymbol,
-  SymbolAnalysisOutput
+  SymbolAnalysisOutput,
+  VolumeProfileWMAStrategyEntryDecision
 } from '../types/StockData';
+import { SymbolAnalysisConclusion } from '../types/StockData';
 import { ENTRY_STACK_RANGE_POSITIONS, STACK_RANGE_POSITIONS } from '../types/Constants';
 
 /**
@@ -75,10 +77,75 @@ export function deriveConclusion(symbolAnalysis: SymbolAnalysisOutput): string {
 }
 
 /**
+ * Gets the gain_loss_ratio from entry decisions, preferring long decisions
+ */
+function getGainLossRatioFromEntryDecisions(
+  longEntryDecisions?: VolumeProfileWMAStrategyEntryDecision[],
+  shortEntryDecisions?: VolumeProfileWMAStrategyEntryDecision[]
+): number | undefined {
+  // First try to get from long entry decisions
+  if (longEntryDecisions && longEntryDecisions.length > 0) {
+    const decision = longEntryDecisions.find(d => d.gain_loss_ratio !== null);
+    if (decision && decision.gain_loss_ratio !== null) {
+      return decision.gain_loss_ratio;
+    }
+  }
+  
+  // Fallback to short entry decisions
+  if (shortEntryDecisions && shortEntryDecisions.length > 0) {
+    const decision = shortEntryDecisions.find(d => d.gain_loss_ratio !== null);
+    if (decision && decision.gain_loss_ratio !== null) {
+      return decision.gain_loss_ratio;
+    }
+  }
+  
+  return undefined;
+}
+
+/**
+ * Gets the conclusion from entry decisions, preferring the most relevant one
+ */
+function getConclusionFromEntryDecisions(
+  longEntryDecisions?: VolumeProfileWMAStrategyEntryDecision[],
+  shortEntryDecisions?: VolumeProfileWMAStrategyEntryDecision[]
+): SymbolAnalysisConclusion | undefined {
+  // First try to get from long entry decisions
+  if (longEntryDecisions && longEntryDecisions.length > 0) {
+    return longEntryDecisions[0].analysis_conclusion;
+  }
+  
+  // Fallback to short entry decisions
+  if (shortEntryDecisions && shortEntryDecisions.length > 0) {
+    return shortEntryDecisions[0].analysis_conclusion;
+  }
+  
+  return undefined;
+}
+
+/**
  * Transforms a StockSelectionResult into the legacy StockSymbol format
  */
 export function transformStockSelectionResult(result: StockSelectionResult): StockSymbol {
   const analysis = result.symbol_analysis_output;
+  
+  // Extract data from entry decisions if available
+  const gainLossRatio = getGainLossRatioFromEntryDecisions(
+    result.long_entry_decisions,
+    result.short_entry_decisions
+  );
+  
+  const entryDecisionConclusion = getConclusionFromEntryDecisions(
+    result.long_entry_decisions,
+    result.short_entry_decisions
+  );
+  
+  // Use entry decision conclusion if available, otherwise derive from analysis
+  let conclusion: string;
+  if (entryDecisionConclusion) {
+    conclusion = entryDecisionConclusion;
+  } else {
+    conclusion = SymbolAnalysisConclusion.NO_APPLICABLE_ENTRY_SCENARIO_FOUND as string;
+  }
   
   return {
     symbol: analysis.symbol,
@@ -87,9 +154,9 @@ export function transformStockSelectionResult(result: StockSelectionResult): Sto
     lower_stack_range: analysis.lower_stack_range || undefined,
     upper_stack_range: analysis.upper_stack_range || undefined,
     volume_histogram: analysis.volume_histogram,
-    gain_loss_ratio: undefined, // This would need to be calculated or provided separately
+    gain_loss_ratio: gainLossRatio,
     sharpe_ratio: analysis.sharpe_ratio,
-    conclusion: deriveConclusion(analysis)
+    conclusion: conclusion
   };
 }
 
@@ -161,17 +228,16 @@ export function ensureLegacyFormat(data: any): StockData {
  */
 export function isStockEntryPoint(conclusion: string): boolean {
   // Check for legacy format conclusions
-  if (conclusion.includes('ACCEPTABLE_RISK')) {
+  if (conclusion.includes('WITH_ACCEPTABLE_RISK')) {
     return true;
   }
   
-  // Check for specific entry point conclusions
-  const entryConclusions = [
-    'ALL_TIME_HIGH_WITH_ACCEPTABLE_RISK',
-    'CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_ACCEPTABLE_RISK',
-    'CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_ACCEPTABLE_RISK',
-    'CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_ACCEPTABLE_RISK',
-    'CUR_PRICE_IN_THE_ONLY_STACK_RANGE_WITH_ACCEPTABLE_RISK'
+  // Check for specific entry point conclusions using the const object values
+  const entryConclusions: string[] = [
+    SymbolAnalysisConclusion.ALL_TIME_HIGH_WITH_ACCEPTABLE_RISK,
+    SymbolAnalysisConclusion.CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_ACCEPTABLE_RISK,
+    SymbolAnalysisConclusion.CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_ACCEPTABLE_RISK,
+    SymbolAnalysisConclusion.CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_ACCEPTABLE_RISK
   ];
   
   return entryConclusions.includes(conclusion);

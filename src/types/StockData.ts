@@ -12,6 +12,52 @@ export interface VolumeHistogram {
   [price: string]: number;
 }
 
+// Const objects for order and analysis types (using const assertions for erasableSyntaxOnly)
+export const OrderIntent = {
+  BUY_TO_OPEN: "BUY_TO_OPEN",
+  SELL_TO_OPEN: "SELL_TO_OPEN",
+  BUY_TO_CLOSE: "BUY_TO_CLOSE",
+  SELL_TO_CLOSE: "SELL_TO_CLOSE"
+} as const;
+
+export const SymbolAnalysisConclusion = {
+  ALL_TIME_HIGH_WITH_ACCEPTABLE_RISK: "ALL_TIME_HIGH_WITH_ACCEPTABLE_RISK",
+  ALL_TIME_HIGH_WITH_UNACCEPTABLE_RISK: "ALL_TIME_HIGH_WITH_UNACCEPTABLE_RISK",
+  CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_ACCEPTABLE_RISK: "CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_ACCEPTABLE_RISK",
+  CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_UNACCEPTABLE_RISK: "CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_UNACCEPTABLE_RISK",
+  CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_ACCEPTABLE_RISK: "CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_ACCEPTABLE_RISK",
+  CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_UNACCEPTABLE_RISK: "CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_UNACCEPTABLE_RISK",
+  CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_ACCEPTABLE_RISK: "CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_ACCEPTABLE_RISK",
+  CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_UNACCEPTABLE_RISK: "CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_UNACCEPTABLE_RISK",
+  NO_STATISTICS_COMPUTED: "NO_STATISTICS_COMPUTED",
+  SHARPE_RATIO_NOT_IN_RANGE: "SHARPE_RATIO_NOT_IN_RANGE",
+  NO_CLOSE_PAIR_RANGE_FOUND: "NO_CLOSE_PAIR_RANGE_FOUND",
+  NO_APPLICABLE_ENTRY_SCENARIO_FOUND: "NO_APPLICABLE_ENTRY_SCENARIO_FOUND",
+  NOT_ENOUGH_FOR_1_SHARE: "NOT_ENOUGH_FOR_1_SHARE",
+  EXCEEDING_MAX_TOTAL_COST_EXPOSURE: "EXCEEDING_MAX_TOTAL_COST_EXPOSURE",
+  GAIN_LOSS_RATIO_NOT_ACCEPTABLE: "GAIN_LOSS_RATIO_NOT_ACCEPTABLE"
+} as const;
+
+export type OrderIntent = typeof OrderIntent[keyof typeof OrderIntent];
+export type SymbolAnalysisConclusion = typeof SymbolAnalysisConclusion[keyof typeof SymbolAnalysisConclusion];
+
+// Entry decision interfaces
+export interface AbstractEntryDecision {
+  current_epoch: number;
+  analysis_conclusion: SymbolAnalysisConclusion;
+  intent: OrderIntent | null;
+  quantity: number | null;
+  price: number | null;
+  gain_loss_ratio: number | null;
+  expected_max_loss: number | null;
+  expected_max_gain: number | null;
+}
+
+export interface VolumeProfileWMAStrategyEntryDecision extends AbstractEntryDecision {
+  stop_loss: number | null;
+  stop_win: number | null;
+}
+
 // New interfaces to match the Python backend structure
 export interface BasePosition {
   // This would be defined based on the BasePosition class in Python
@@ -41,6 +87,8 @@ export interface SymbolAnalysisOutput {
 export interface StockSelectionResult {
   strategy_position_output: StrategyPositionOutput;
   symbol_analysis_output: SymbolAnalysisOutput;
+  long_entry_decisions?: VolumeProfileWMAStrategyEntryDecision[];
+  short_entry_decisions?: VolumeProfileWMAStrategyEntryDecision[];
 }
 
 // Legacy interface for backward compatibility and component usage

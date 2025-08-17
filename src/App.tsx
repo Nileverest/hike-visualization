@@ -84,13 +84,19 @@ function App() {
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   
-  // Sort stocks to put entry point stocks first
+  // Sort stocks by gain_loss_ratio descending, then alphabetically ascending
+  // Default to -1 for missing gain_loss_ratio values
   const sortedResults = data?.results ? [...data.results].sort((a, b) => {
-    const aIsEntry = isStockEntryPoint(a.conclusion);
-    const bIsEntry = isStockEntryPoint(b.conclusion);
-    if (aIsEntry && !bIsEntry) return -1;
-    if (!aIsEntry && bIsEntry) return 1;
-    return 0;
+    const aRatio = a.gain_loss_ratio ?? -1;
+    const bRatio = b.gain_loss_ratio ?? -1;
+    
+    // First sort by gain_loss_ratio descending
+    if (aRatio !== bRatio) {
+      return bRatio - aRatio;
+    }
+    
+    // Then sort by symbol alphabetically ascending
+    return a.symbol.localeCompare(b.symbol);
   }) : [];
   
   const currentItems = sortedResults.slice(indexOfFirstItem, indexOfLastItem);
@@ -248,6 +254,9 @@ function App() {
                       </div>
                       <div className={`text-sm opacity-75 ${isHighlighted ? 'text-green-700 dark:text-green-300' : ''}`}>
                         ${stock.current_price.toFixed(2)}
+                      </div>
+                      <div className={`text-xs opacity-60 ${isHighlighted ? 'text-green-700 dark:text-green-300' : ''}`}>
+                        G/L: {stock.gain_loss_ratio !== null && stock.gain_loss_ratio !== undefined ? stock.gain_loss_ratio.toFixed(2) : 'N/A'}
                       </div>
                     </button>
                   );
