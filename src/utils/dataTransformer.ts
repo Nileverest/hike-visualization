@@ -228,16 +228,16 @@ export function ensureLegacyFormat(data: any): StockData {
  */
 export function isStockEntryPoint(conclusion: string): boolean {
   // Check for legacy format conclusions
-  if (conclusion.includes('WITH_ACCEPTABLE_RISK')) {
-    return true;
-  }
+  // if (conclusion.includes('WITH_ACCEPTABLE_RISK')) {
+  //   return true;
+  // }
   
   // Check for specific entry point conclusions using the const object values
   const entryConclusions: string[] = [
-    SymbolAnalysisConclusion.ALL_TIME_HIGH_WITH_ACCEPTABLE_RISK,
+    // SymbolAnalysisConclusion.ALL_TIME_HIGH_WITH_ACCEPTABLE_RISK,
     SymbolAnalysisConclusion.CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_ACCEPTABLE_RISK,
     SymbolAnalysisConclusion.CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_ACCEPTABLE_RISK,
-    SymbolAnalysisConclusion.CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_ACCEPTABLE_RISK
+    // SymbolAnalysisConclusion.CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_ACCEPTABLE_RISK
   ];
   
   return entryConclusions.includes(conclusion);
