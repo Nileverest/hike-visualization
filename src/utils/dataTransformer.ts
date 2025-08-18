@@ -237,6 +237,7 @@ export function isStockEntryPoint(conclusion: string): boolean {
     // SymbolAnalysisConclusion.ALL_TIME_HIGH_WITH_ACCEPTABLE_RISK,
     SymbolAnalysisConclusion.CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_ACCEPTABLE_RISK,
     SymbolAnalysisConclusion.CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_ACCEPTABLE_RISK,
+    SymbolAnalysisConclusion.CUR_PRICE_IN_STACK_RANGE_WITH_ACCEPTABLE_RISK,
     // SymbolAnalysisConclusion.CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_ACCEPTABLE_RISK
   ];
   
