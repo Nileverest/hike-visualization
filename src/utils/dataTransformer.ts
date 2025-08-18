@@ -231,15 +231,16 @@ export function isStockEntryPoint(conclusion: string): boolean {
   // if (conclusion.includes('WITH_ACCEPTABLE_RISK')) {
   //   return true;
   // }
+  const processedConclusion = conclusion.split('.')[1];
   
   // Check for specific entry point conclusions using the const object values
   const entryConclusions: string[] = [
     // SymbolAnalysisConclusion.ALL_TIME_HIGH_WITH_ACCEPTABLE_RISK,
-    SymbolAnalysisConclusion.CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_ACCEPTABLE_RISK,
-    SymbolAnalysisConclusion.CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_ACCEPTABLE_RISK,
-    SymbolAnalysisConclusion.CUR_PRICE_IN_STACK_RANGE_WITH_ACCEPTABLE_RISK,
+    SymbolAnalysisConclusion.CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_ACCEPTABLE_RISK.toString(),
+    SymbolAnalysisConclusion.CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_ACCEPTABLE_RISK.toString(),
+    SymbolAnalysisConclusion.CUR_PRICE_IN_STACK_RANGE_WITH_ACCEPTABLE_RISK.toString(),
     // SymbolAnalysisConclusion.CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_ACCEPTABLE_RISK
   ];
   
-  return entryConclusions.includes(conclusion);
+  return entryConclusions.includes(processedConclusion);
 }
