@@ -9,7 +9,7 @@ Successfully updated the React web app to support the new JSON input format from
 - **Added new interfaces** to match the Python backend structure:
   - `StrategyPositionOutput` - Contains positions to enter/update
   - `SymbolAnalysisOutput` - Contains stock analysis data
-  - `StockSelectionResult` - Combines position and analysis outputs
+  - `VolumeProfileWmaStockSelectionOutput` - Combines position and analysis outputs
   - `VolumeProfileVisualizationData` - Main data container
   - Detailed configuration interfaces matching Python classes
 

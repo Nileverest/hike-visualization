@@ -1,13 +1,13 @@
 import type { 
   VolumeProfileVisualizationData, 
-  StockSelectionResult, 
+  VolumeProfileWmaStockSelectionOutput, 
   StockData, 
   StockSymbol,
   SymbolAnalysisOutput,
   VolumeProfileWMAStrategyEntryDecision
 } from '../types/StockData';
 import { SymbolAnalysisConclusion } from '../types/StockData';
-import { ENTRY_STACK_RANGE_POSITIONS, STACK_RANGE_POSITIONS } from '../types/Constants';
+import { ENTRY_STACK_RANGE_POSITIONS } from '../types/Constants';
 
 /**
  * Determines if a stock analysis result represents an entry point
@@ -29,51 +29,6 @@ export function isEntryPoint(symbolAnalysis: SymbolAnalysisOutput): boolean {
   );
   
   return Boolean(hasEntryPosition && hasStackRanges);
-}
-
-/**
- * Derives a conclusion string from the symbol analysis data
- * This attempts to recreate the conclusion logic from the Python backend
- */
-export function deriveConclusion(symbolAnalysis: SymbolAnalysisOutput): string {
-  const position = symbolAnalysis.stack_range_position;
-  
-  // Map stack range positions to human-readable conclusions
-  switch (position) {
-    case STACK_RANGE_POSITIONS.HIGHER_THAN_ALL_STACK_RANGES:
-      return isEntryPoint(symbolAnalysis) 
-        ? "ALL_TIME_HIGH_WITH_ACCEPTABLE_RISK"
-        : "ALL_TIME_HIGH_WITH_UNACCEPTABLE_RISK";
-        
-    case STACK_RANGE_POSITIONS.IN_HIGHEST_STACK_RANGE:
-      return isEntryPoint(symbolAnalysis)
-        ? "CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_ACCEPTABLE_RISK"
-        : "CUR_PRICE_IN_HIGHEST_STACK_RANGE_WITH_UNACCEPTABLE_RISK";
-        
-    case STACK_RANGE_POSITIONS.IN_LOWEST_STACK_RANGE:
-      return isEntryPoint(symbolAnalysis)
-        ? "CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_ACCEPTABLE_RISK"
-        : "CUR_PRICE_IN_LOWEST_STACK_RANGE_WITH_UNACCEPTABLE_RISK";
-        
-    case STACK_RANGE_POSITIONS.BETWEEN_TWO_STACK_RANGES:
-      return isEntryPoint(symbolAnalysis)
-        ? "CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_ACCEPTABLE_RISK"
-        : "CUR_PRICE_IN_BETWEEN_STACK_RANGES_WITH_UNACCEPTABLE_RISK";
-        
-    case STACK_RANGE_POSITIONS.IN_THE_ONLY_STACK_RANGE:
-      return isEntryPoint(symbolAnalysis)
-        ? "CUR_PRICE_IN_THE_ONLY_STACK_RANGE_WITH_ACCEPTABLE_RISK"
-        : "CUR_PRICE_IN_THE_ONLY_STACK_RANGE_WITH_UNACCEPTABLE_RISK";
-        
-    case STACK_RANGE_POSITIONS.LOWER_THAN_ALL_STACK_RANGES:
-      return "CUR_PRICE_LOWER_THAN_ALL_STACK_RANGES";
-        
-    case STACK_RANGE_POSITIONS.NO_STACK_RANGES:
-      return "NO_STACK_RANGES_FOUND";
-        
-    default:
-      return "NO_APPLICABLE_ENTRY_SCENARIO_FOUND";
-  }
 }
 
 /**
@@ -123,9 +78,9 @@ function getConclusionFromEntryDecisions(
 }
 
 /**
- * Transforms a StockSelectionResult into the legacy StockSymbol format
+ * Transforms a VolumeProfileWmaStockSelectionOutput into the legacy StockSymbol format
  */
-export function transformStockSelectionResult(result: StockSelectionResult): StockSymbol {
+export function transformVolumeProfileWmaStockSelectionOutput(result: VolumeProfileWmaStockSelectionOutput): StockSymbol {
   const analysis = result.symbol_analysis_output;
   
   // Extract data from entry decisions if available
@@ -165,7 +120,7 @@ export function transformStockSelectionResult(result: StockSelectionResult): Sto
  * This allows existing components to work with the new data structure
  */
 export function transformToLegacyFormat(newData: VolumeProfileVisualizationData): StockData {
-  const transformedResults = newData.results.map(transformStockSelectionResult);
+  const transformedResults = newData.results.map(transformVolumeProfileWmaStockSelectionOutput);
   
   // Transform the config to match the legacy format
   const legacyConfig = {
@@ -177,7 +132,7 @@ export function transformToLegacyFormat(newData: VolumeProfileVisualizationData)
     num_processes: 1, // Default value
     sharpe_ratio_min: newData.config.sharpe_ratio_strategy_config.min_sharpe_ratio,
     sharpe_ratio_max: newData.config.sharpe_ratio_strategy_config.max_sharpe_ratio,
-    gain_loss_ratio_threshold: newData.config.gain_loss_ratio_threshold,
+    gain_loss_ratio_threshold: newData.config.entry_filtering_config.min_gain_loss_ratio,
     lower_range_volume_to_upper_range_ratio_lower: newData.config.volume_histogram_strategy_config.lower_range_volume_to_upper_range_ratio_lower,
     lower_range_volume_to_upper_range_ratio_upper: newData.config.volume_histogram_strategy_config.lower_range_volume_to_upper_range_ratio_upper,
     price_increment: newData.config.major_stack_range_config.price_increment,

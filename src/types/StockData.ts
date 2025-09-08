@@ -51,6 +51,8 @@ export interface AbstractEntryDecision {
   gain_loss_ratio: number | null;
   expected_max_loss: number | null;
   expected_max_gain: number | null;
+  expected_max_loss_percentage: number | null;
+  expected_max_gain_percentage: number | null;
 }
 
 export interface VolumeProfileWMAStrategyEntryDecision extends AbstractEntryDecision {
@@ -84,7 +86,7 @@ export interface SymbolAnalysisOutput {
 }
 
 // New structure that matches VolumeProfileWmaStockSelectionOutput
-export interface StockSelectionResult {
+export interface VolumeProfileWmaStockSelectionOutput {
   strategy_position_output: StrategyPositionOutput;
   symbol_analysis_output: SymbolAnalysisOutput;
   long_entry_decisions?: VolumeProfileWMAStrategyEntryDecision[];
@@ -105,7 +107,7 @@ export interface StockSymbol {
 }
 
 // New configuration structure that matches VolumeProfileWMAStrategyConfig
-export interface StrategyDataProviderConfig {
+export interface VolumeProfileWMAStrategyConfig {
   input_top_level_directory: string;
   start_datetime: string;
   end_datetime: string;
@@ -117,6 +119,12 @@ export interface VolumeHistogramStrategyConfig {
   lower_range_volume_to_upper_range_ratio_lower: number;
   lower_range_volume_to_upper_range_ratio_upper: number;
   all_time_high_risk_percentage_threshold: number;
+}
+
+export interface LogisticDecayVolumeHistogramStrategyConfig extends VolumeHistogramStrategyConfig {
+  long_term_decay_factor: number;
+  decay_rate: number;
+  midpoint: number;
 }
 
 export interface SharpeRatioStrategyConfig {
@@ -145,16 +153,31 @@ export interface MajorStackRangeConfig {
   percentile?: number;
 }
 
+export interface BaseEntryFilteringConfig {
+}
+
+export interface GainLossRatioEntryFilteringConfig extends BaseEntryFilteringConfig {
+  min_gain_loss_ratio: number;
+  min_gain_percent: number;
+  max_loss_percent: number;
+  min_gain_amount: number;
+  max_loss_amount: number;
+}
+
+export interface BaseDedupExistingPositionConfig {
+  min_percentage_with_respect_to_existing_position_entry_price: number;
+}
+
 export interface VolumeProfileWMAStrategyConfig {
   is_test: boolean;
-  strategy_data_provider_config: StrategyDataProviderConfig;
-  volume_histogram_strategy_config: VolumeHistogramStrategyConfig;
+  strategy_data_provider_config: VolumeProfileWMAStrategyConfig;
+  volume_histogram_strategy_config: LogisticDecayVolumeHistogramStrategyConfig;
   sharpe_ratio_strategy_config: SharpeRatioStrategyConfig;
   candle_stick_strategy_config: WeightedAverageCandleStickStrategyConfig;
   position_management_config: PositionManagementConfig;
   major_stack_range_config: MajorStackRangeConfig;
-  gain_loss_ratio_threshold: number;
-  dedup_threshold_percentage_with_respect_to_existing_position: number;
+  entry_filtering_config: GainLossRatioEntryFilteringConfig;
+  dedup_existing_position_config: BaseDedupExistingPositionConfig;
 }
 
 // Legacy config interface for backward compatibility
@@ -186,7 +209,7 @@ export interface StockDataConfig {
 export interface VolumeProfileVisualizationData {
   timestamp: string;
   config: VolumeProfileWMAStrategyConfig;
-  results: StockSelectionResult[];
+  results: VolumeProfileWmaStockSelectionOutput[];
 }
 
 // Legacy interface for backward compatibility

@@ -80,7 +80,7 @@ function deriveConclusion(symbolAnalysis) {
   return "NO_APPLICABLE_ENTRY_SCENARIO_FOUND";
 }
 
-function transformStockSelectionResult(result) {
+function transformVolumeProfileWmaStockSelectionOutput(result) {
   const analysis = result.symbol_analysis_output;
   
   return {
@@ -96,7 +96,7 @@ function transformStockSelectionResult(result) {
 }
 
 function transformToLegacyFormat(newData) {
-  const transformedResults = newData.results.map(transformStockSelectionResult);
+  const transformedResults = newData.results.map(transformVolumeProfileWmaStockSelectionOutput);
   
   return {
     timestamp: newData.timestamp,
