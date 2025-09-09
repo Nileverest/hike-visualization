@@ -106,8 +106,8 @@ export interface StockSymbol {
   conclusion: string;
 }
 
-// New configuration structure that matches VolumeProfileWMAStrategyConfig
-export interface VolumeProfileWMAStrategyConfig {
+// New configuration structure that matches StrategyDataProviderConfig
+export interface StrategyDataProviderConfig {
   input_top_level_directory: string;
   start_datetime: string;
   end_datetime: string;
@@ -119,6 +119,8 @@ export interface VolumeHistogramStrategyConfig {
   lower_range_volume_to_upper_range_ratio_lower: number;
   lower_range_volume_to_upper_range_ratio_upper: number;
   all_time_high_risk_percentage_threshold: number;
+  resolution?: number;
+  accumulated_resolution_to_price_ratio?: number;
 }
 
 export interface LogisticDecayVolumeHistogramStrategyConfig extends VolumeHistogramStrategyConfig {
@@ -170,7 +172,7 @@ export interface BaseDedupExistingPositionConfig {
 
 export interface VolumeProfileWMAStrategyConfig {
   is_test: boolean;
-  strategy_data_provider_config: VolumeProfileWMAStrategyConfig;
+  strategy_data_provider_config: StrategyDataProviderConfig;
   volume_histogram_strategy_config: LogisticDecayVolumeHistogramStrategyConfig;
   sharpe_ratio_strategy_config: SharpeRatioStrategyConfig;
   candle_stick_strategy_config: WeightedAverageCandleStickStrategyConfig;
