@@ -28,6 +28,9 @@ interface VolumeProfileChartProps {
   stockData: StockSymbol;
 }
 
+// Global variable for bar size configuration
+const BAR_HEIGHT = 25; // Height per bar in pixels
+
 const VolumeProfileChart: React.FC<VolumeProfileChartProps> = ({ stockData }) => {
   // Memoize the chart data calculation to ensure it updates when stockData changes
   const chartData = useMemo(() => {
@@ -119,10 +122,17 @@ const VolumeProfileChart: React.FC<VolumeProfileChartProps> = ({ stockData }) =>
     id: 'currentPricePlugin',
     afterDraw: (chart: any) => {
       const { ctx, scales } = chart;
-      const currentPriceLabel = chartData.currentPrice.toFixed(2);
+      const currentPrice = chartData.currentPrice;
       
-      // Find the y-position of the current price
-      const yPosition = scales.y.getPixelForValue(currentPriceLabel);
+      // Find the closest price bar index for the current price
+      const closestPriceIndex = chartData.priceLabels.reduce((closestIndex, price, index) => {
+        return Math.abs(price - currentPrice) < Math.abs(chartData.priceLabels[closestIndex] - currentPrice)
+          ? index
+          : closestIndex;
+      }, 0);
+      
+      // Get the y-position using the bar index instead of price value
+      const yPosition = scales.y.getPixelForValue(closestPriceIndex);
       
       if (yPosition) {
         // Draw horizontal line across the chart
@@ -146,7 +156,7 @@ const VolumeProfileChart: React.FC<VolumeProfileChartProps> = ({ stockData }) =>
         ctx.fillStyle = 'rgba(255, 0, 0, 1)';
         ctx.font = 'bold 14px Arial'; // Slightly larger font
         ctx.textAlign = 'center';
-        ctx.fillText(`$${currentPriceLabel}`, scales.x.right - 45, yPosition + 5);
+        ctx.fillText(`$${currentPrice.toFixed(2)}`, scales.x.right - 45, yPosition + 5);
         
         // Add "CURRENT" text below price
         ctx.font = 'bold 10px Arial';
@@ -154,7 +164,7 @@ const VolumeProfileChart: React.FC<VolumeProfileChartProps> = ({ stockData }) =>
         ctx.restore();
       }
     }
-  }), [chartData.currentPrice]);
+  }), [chartData.currentPrice, chartData.priceLabels]);
 
   const options = useMemo(() => ({
     indexAxis: 'y' as const, // This makes the bar chart horizontal
@@ -227,8 +237,12 @@ const VolumeProfileChart: React.FC<VolumeProfileChartProps> = ({ stockData }) =>
     },
   }), [stockData.symbol, stockData.conclusion, chartData.currentPrice, chartData.borderWidths]);
 
+  // Calculate dynamic height based on number of bars
+  const numberOfBars = Object.keys(stockData.volume_histogram).length;
+  const chartHeight = Math.max(400, numberOfBars * BAR_HEIGHT); // Minimum 400px, then scale with bars
+
   return (
-    <div className="w-full h-[9600px]"> {/* Increased height even more */}
+    <div className="w-full" style={{ height: `${chartHeight}px` }}>
       <Bar 
         key={`${stockData.symbol}-${chartData.currentPrice}`} // Force re-render when symbol/price changes
         data={chartData} 

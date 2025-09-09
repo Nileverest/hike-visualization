@@ -148,7 +148,6 @@ export interface PositionManagementConfig {
 }
 
 export interface MajorStackRangeConfig {
-  price_increment: number;
   tolerable_window: number;
   stack_range_min_ratio: number;
   volume_threshold_above_mean_ratio?: number;
