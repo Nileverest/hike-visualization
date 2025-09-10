@@ -13,7 +13,6 @@
     "gain_loss_ratio_threshold": 1.1,
     "lower_range_volume_to_upper_range_ratio_lower": 0.8,
     "lower_range_volume_to_upper_range_ratio_upper": 1.2,
-    "price_increment": 0.01,
     "volume_threshold_above_mean_ratio": 0.8,
     "tolerable_window": 10,
     "max_gap_percentage": 0.01,

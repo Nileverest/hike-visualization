@@ -194,7 +194,6 @@ export interface StockDataConfig {
   gain_loss_ratio_threshold: number;
   lower_range_volume_to_upper_range_ratio_lower: number;
   lower_range_volume_to_upper_range_ratio_upper: number;
-  price_increment: number;
   above_average_percentage?: number;
   tolerable_window: number;
   max_gap_percentage: number;

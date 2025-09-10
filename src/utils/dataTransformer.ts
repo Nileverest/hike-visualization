@@ -135,7 +135,6 @@ export function transformToLegacyFormat(newData: VolumeProfileVisualizationData)
     gain_loss_ratio_threshold: newData.config.entry_filtering_config.min_gain_loss_ratio,
     lower_range_volume_to_upper_range_ratio_lower: newData.config.volume_histogram_strategy_config.lower_range_volume_to_upper_range_ratio_lower,
     lower_range_volume_to_upper_range_ratio_upper: newData.config.volume_histogram_strategy_config.lower_range_volume_to_upper_range_ratio_upper,
-    price_increment: newData.config.major_stack_range_config.price_increment,
     above_average_percentage: newData.config.major_stack_range_config.volume_threshold_above_mean_ratio,
     tolerable_window: newData.config.major_stack_range_config.tolerable_window,
     max_gap_percentage: newData.config.major_stack_range_config.stack_range_min_ratio,

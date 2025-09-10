@@ -29,7 +29,6 @@
       "max_total_cost_exposure": 10000.0
     },
     "major_stack_range_config": {
-      "price_increment": 0.01,
       "volume_threshold_above_mean_ratio": 1.15,
       "tolerable_window": 2,
       "stack_range_min_ratio": 0.03
