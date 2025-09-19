@@ -29,7 +29,7 @@ interface VolumeProfileChartProps {
 }
 
 // Global variable for bar size configuration
-const BAR_HEIGHT = 10; // Height per bar in pixels
+const BAR_HEIGHT = 3; // Height per bar in pixels
 
 const VolumeProfileChart: React.FC<VolumeProfileChartProps> = ({ stockData }) => {
   // Memoize the chart data calculation to ensure it updates when stockData changes
